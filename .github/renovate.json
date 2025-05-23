@@ -1,0 +1,14 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":automergeMinor",
+    ":automergeRequireAllStatusChecks",
+    ":pinVersions",
+    ":maintainLockFilesWeekly",
+    "group:allNonMajor",
+    "schedule:earlyMondays",
+    "customManagers:biomeVersions"
+  ],
+  "labels": ["dependencies"]
+}
