@@ -1,23 +1,23 @@
 import {
-  createRootRoute,
   HeadContent,
   Outlet,
   Scripts,
-} from "@tanstack/react-router";
-import type { ReactNode } from "react";
+  createRootRoute,
+} from '@tanstack/react-router';
+import type { ReactNode } from 'react';
 
 export const Route = createRootRoute({
   head: () => ({
     meta: [
       {
-        charSet: "utf-8",
+        charSet: 'utf-8',
       },
       {
-        name: "viewport",
-        content: "width=device-width, initial-scale=1",
+        name: 'viewport',
+        content: 'width=device-width, initial-scale=1',
       },
       {
-        title: "Pocket -> Feedbin",
+        title: 'Pocket -> Feedbin',
       },
     ],
   }),
@@ -34,7 +34,7 @@ function RootComponent() {
 
 function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <html>
+    <html lang="en">
       <head>
         <HeadContent />
       </head>
