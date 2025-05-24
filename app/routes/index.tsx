@@ -1,65 +1,84 @@
-import { ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 import { createFileRoute } from '@tanstack/react-router';
 import { useCallback, useState } from 'react';
-import { useDropzone } from 'react-dropzone';
+import { BookmarkList } from '../components/BookmarkList';
+import { ErrorDisplay } from '../components/ErrorDisplay';
+import { FileUploadArea } from '../components/FileUploadArea';
+import { ProcessingIndicator } from '../components/ProcessingIndicator';
+import { useCsvParser } from '../hooks/useCsvParser';
+import type { ParsedData } from '../types/pocket';
 
 export const Route = createFileRoute('/')({
   component: Home,
 });
 
 function Home() {
-  const [fileHover, setFileHover] = useState(false);
+  const [parsedData, setParsedData] = useState<ParsedData>({
+    data: [],
+    error: null,
+  });
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    // Handle the file upload here
-    console.log('Accepted files:', acceptedFiles);
+  const resetData = () => {
+    setParsedData({ data: [], error: null });
+  };
 
-    // You can process CSV files here
-    const file = acceptedFiles[0];
-    if (file) {
-      // Process the CSV file
-      console.log('Processing file:', file.name);
-    }
+  const handleParseStart = useCallback(() => {
+    setIsProcessing(true);
+    setParsedData({ data: [], error: null });
   }, []);
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: {
-      'text/csv': ['.csv'],
-    },
+  const handleParseComplete = useCallback((data: ParsedData) => {
+    setParsedData(data);
+    setIsProcessing(false);
+  }, []);
+
+  const { parseFile } = useCsvParser({
+    onParseStart: handleParseStart,
+    onParseComplete: handleParseComplete,
   });
 
+  const handleFileDrop = useCallback(
+    (file: File) => {
+      parseFile(file);
+    },
+    [parseFile],
+  );
+
+  // Render the UI
   return (
     <div className="flex items-center justify-center min-h-screen p-4">
-      <div
-        {...getRootProps()}
-        className={`
-          w-[70vw] h-[70vh] flex flex-col items-center justify-center
-          border-4 border-dashed rounded-2xl p-6 text-center 
-          transition-colors duration-200 cursor-pointer
-          ${
-            isDragActive || fileHover
-              ? 'border-blue-600 bg-blue-100'
-              : 'border-blue-400 bg-blue-50 hover:bg-blue-100'
-          }
-        `}
-        onMouseEnter={() => setFileHover(true)}
-        onMouseLeave={() => setFileHover(false)}
-      >
-        <input {...getInputProps()} />
-        <ArrowUpTrayIcon
-          className={`w-12 h-12 mb-3 ${isDragActive ? 'text-blue-600' : 'text-blue-500'}`}
-        />
-        <p
-          className={`text-lg font-medium ${isDragActive ? 'text-blue-700' : 'text-blue-600'}`}
+      {/* If we have data and no errors, show the BookmarkList component */}
+      {parsedData.data.length > 0 && !parsedData.error ? (
+        <div className="w-full h-[90vh] p-4">
+          <BookmarkList items={parsedData.data} onReset={resetData} />
+        </div>
+      ) : (
+        <div
+          className={`
+            w-[70vw] h-[70vh] flex flex-col items-center justify-center
+            ${isProcessing ? 'cursor-wait' : ''}
+            ${parsedData.error ? 'border-red-400' : ''}
+          `}
         >
-          Drop CSV file here
-        </p>
-        <p className="text-sm text-blue-500 mt-1">or click to select file</p>
-        <p className="text-xs text-blue-400 mt-3">
-          Only CSV files are accepted
-        </p>
-      </div>
+          {isProcessing ? (
+            <ProcessingIndicator />
+          ) : parsedData.error ? (
+            <ErrorDisplay
+              errorMessage={parsedData.error}
+              onReset={(e) => {
+                e.stopPropagation();
+                resetData();
+              }}
+            />
+          ) : (
+            <FileUploadArea
+              onFileDrop={handleFileDrop}
+              isProcessing={isProcessing}
+              hasError={!!parsedData.error}
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 }
