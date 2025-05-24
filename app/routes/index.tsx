@@ -1,47 +1,65 @@
-import * as fs from 'node:fs';
-import { createFileRoute, useRouter } from '@tanstack/react-router';
-import { createServerFn } from '@tanstack/react-start';
-
-const filePath = 'count.txt';
-
-async function readCount() {
-  return Number.parseInt(
-    await fs.promises.readFile(filePath, 'utf-8').catch(() => '0'),
-  );
-}
-
-const getCount = createServerFn({
-  method: 'GET',
-}).handler(() => {
-  return readCount();
-});
-
-const updateCount = createServerFn({ method: 'POST' })
-  .validator((d: number) => d)
-  .handler(async ({ data }) => {
-    const count = await readCount();
-    await fs.promises.writeFile(filePath, `${count + data}`);
-  });
+import { ArrowUpTrayIcon } from '@heroicons/react/24/outline';
+import { createFileRoute } from '@tanstack/react-router';
+import { useCallback, useState } from 'react';
+import { useDropzone } from 'react-dropzone';
 
 export const Route = createFileRoute('/')({
   component: Home,
-  loader: async () => await getCount(),
 });
 
 function Home() {
-  const router = useRouter();
-  const state = Route.useLoaderData();
+  const [fileHover, setFileHover] = useState(false);
+
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    // Handle the file upload here
+    console.log('Accepted files:', acceptedFiles);
+
+    // You can process CSV files here
+    const file = acceptedFiles[0];
+    if (file) {
+      // Process the CSV file
+      console.log('Processing file:', file.name);
+    }
+  }, []);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      'text/csv': ['.csv'],
+    },
+  });
 
   return (
-    <button
-      type="button"
-      onClick={() => {
-        updateCount({ data: 1 }).then(() => {
-          router.invalidate();
-        });
-      }}
-    >
-      Add 1 to {state}?
-    </button>
+    <div className="flex items-center justify-center min-h-screen p-4">
+      <div
+        {...getRootProps()}
+        className={`
+          w-[70vw] h-[70vh] flex flex-col items-center justify-center
+          border-4 border-dashed rounded-2xl p-6 text-center 
+          transition-colors duration-200 cursor-pointer
+          ${
+            isDragActive || fileHover
+              ? 'border-blue-600 bg-blue-100'
+              : 'border-blue-400 bg-blue-50 hover:bg-blue-100'
+          }
+        `}
+        onMouseEnter={() => setFileHover(true)}
+        onMouseLeave={() => setFileHover(false)}
+      >
+        <input {...getInputProps()} />
+        <ArrowUpTrayIcon
+          className={`w-12 h-12 mb-3 ${isDragActive ? 'text-blue-600' : 'text-blue-500'}`}
+        />
+        <p
+          className={`text-lg font-medium ${isDragActive ? 'text-blue-700' : 'text-blue-600'}`}
+        >
+          Drop CSV file here
+        </p>
+        <p className="text-sm text-blue-500 mt-1">or click to select file</p>
+        <p className="text-xs text-blue-400 mt-3">
+          Only CSV files are accepted
+        </p>
+      </div>
+    </div>
   );
 }
