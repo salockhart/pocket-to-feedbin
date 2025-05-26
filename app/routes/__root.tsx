@@ -5,6 +5,7 @@ import {
   createRootRoute,
 } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
+import styles from '../index.css?url';
 
 export const Route = createRootRoute({
   head: () => ({
@@ -20,6 +21,7 @@ export const Route = createRootRoute({
         title: 'Pocket -> Feedbin',
       },
     ],
+    links: [{ rel: 'stylesheet', href: styles }],
   }),
   component: RootComponent,
 });
