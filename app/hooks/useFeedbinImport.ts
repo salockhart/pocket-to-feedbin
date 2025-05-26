@@ -98,10 +98,19 @@ export function useFeedbinImport() {
       try {
         await addToFeedbin({ data: { credentials, item } });
 
+        // Add the item to importedItems array
         importedItems.push(item);
 
         // Small delay to prevent overwhelming the API
         await new Promise((resolve) => setTimeout(resolve, 500));
+
+        // Update the status to show this item as imported immediately
+        // Using the functional form of setState to avoid race conditions
+        setImportStatus((prev) => ({
+          ...prev,
+          importedItems: [...prev.importedItems, item],
+          currentIndex: -1,
+        }));
       } catch (error) {
         console.error('Error importing to Feedbin:', error);
         setImportStatus({

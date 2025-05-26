@@ -5,7 +5,6 @@ import {
   ExclamationCircleIcon,
 } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
-import { useEffect } from 'react';
 import { useFeedbinImport } from '../hooks/useFeedbinImport';
 import type { PocketItem } from '../types/pocket';
 import { CredentialsDialog } from './CredentialsDialog';
@@ -26,16 +25,6 @@ export function BookmarkList({ items, onReset }: BookmarkListProps) {
     closeCredentialsPrompt,
     handleCredentialsSubmit,
   } = useFeedbinImport();
-
-  // Close the import status when completed after a delay
-  useEffect(() => {
-    if (importStatus.status === 'completed') {
-      const timer = setTimeout(() => {
-        resetImport();
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [importStatus.status, resetImport]);
 
   const handleImportClick = () => {
     openCredentialsPrompt();
