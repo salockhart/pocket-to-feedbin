@@ -16,6 +16,36 @@ interface ImportStatus {
   importedItems: PocketItem[];
 }
 
+const markAsRead = createServerFn()
+  .validator(
+    z.object({
+      credentials: z.object({
+        email: z.string().email(),
+        password: z.string().min(1),
+      }),
+      entryId: z.number(),
+    }),
+  )
+  .handler(async ({ data: { credentials, entryId } }) => {
+    const response = await fetch(
+      'https://api.feedbin.com/v2/unread_entries.json',
+      {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          Authorization: `Basic ${btoa(`${credentials.email}:${credentials.password}`)}`,
+        },
+        body: JSON.stringify({
+          unread_entries: [entryId],
+        }),
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to mark item as read: ${response.statusText}`);
+    }
+  });
+
 const addToFeedbin = createServerFn()
   .validator(
     z.object({
@@ -26,6 +56,8 @@ const addToFeedbin = createServerFn()
       item: z.object({
         url: z.string().url(),
         title: z.string().min(1),
+        status: z.enum(['archive', 'unread']),
+        tags: z.string().optional(),
       }),
     }),
   )
@@ -44,6 +76,11 @@ const addToFeedbin = createServerFn()
 
     if (!response.ok) {
       throw new Error(`Failed to import item: ${response.statusText}`);
+    }
+
+    if (item.status === 'archive') {
+      const { id: entryId } = await response.json();
+      await markAsRead({ data: { credentials, entryId } });
     }
   });
 

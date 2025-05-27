@@ -4,7 +4,7 @@ export interface PocketItem {
   url: string;
   time_added: string;
   tags: string;
-  status: string;
+  status: 'archive' | 'unread';
 }
 
 // Represents the parsed CSV data
