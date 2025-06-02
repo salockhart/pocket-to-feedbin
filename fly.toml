@@ -4,7 +4,7 @@
 #
 
 app = 'pocket-to-feedbin'
-primary_region = 'bos'
+primary_region = 'yyz'
 
 [build]
 
