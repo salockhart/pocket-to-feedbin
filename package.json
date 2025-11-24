@@ -23,7 +23,7 @@
     "react-dom": "19.1.0",
     "react-dropzone": "14.3.8",
     "vinxi": "0.5.7",
-    "zod": "3.25.64"
+    "zod": "4.1.12"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
