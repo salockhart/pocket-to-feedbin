@@ -8,7 +8,8 @@
     ":maintainLockFilesWeekly",
     "group:allNonMajor",
     "schedule:earlyMondays",
-    "customManagers:biomeVersions"
+    "customManagers:biomeVersions",
+    "security:minimumReleaseAgeNpm"
   ],
   "labels": ["dependencies"]
 }
